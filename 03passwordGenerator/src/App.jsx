@@ -61,7 +61,7 @@ function App() {
           >copy</button>
         </div>
         <div className='flex text-sm gap-x-2'>
-          <div className='flex items-centergap-x-1'>
+          <div className='flex items-centergap-x-1'>//
             <input 
             type="range"
             min={6}
