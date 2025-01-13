@@ -28,25 +28,44 @@ router.get('/courses', async (req, res) => {
 });
 
 router.post('/courses/:courseId', userMiddleware, async(req, res) => {
-    // Implement course purchase logic
-    const courseId = req.params.courseId;
-    const username = req.headers.username;
-    console.log(courseId)
+    try {
+        const courseId = req.params.courseId;
+        const username = req.headers.username;
 
-    await User.updateOne({
-        username: username
-    }, {
-        "$push": {
-            purchasedCourses: courseId
+        const result = await User.updateOne(
+            { username: username },
+            { "$push": { purchasedCourses: courseId } }
+        );
+        console.log(courseId);
+
+        if (result.modifiedCount === 0) {
+            return res.status(400).json({ message: "Purchase failed, course might already be purchased." });
+        }
+
+        res.json({
+            message: "Purchase complete!"
+        });
+    } catch (err) { 
+        console.error(err);
+        console.log(err);
+        res.status(500).json({ message: "An error occurred while processing the purchase." });
+    }
+});
+
+
+router.get('/purchasedCourses', userMiddleware, async (req, res) => {
+    // Implement fetching purchased courses logic
+    const user = await User.findOne({
+        username: req.headers.username
+    });
+    const course = await Course.find({
+        _id: {
+            "$in": user.purchasedCourses
         }
     })
     res.json({
-        message: "Purchase complete!"
+        courses: course
     })
-});
-
-router.get('/purchasedCourses', userMiddleware, (req, res) => {
-    // Implement fetching purchased courses logic
 });
 
 module.exports = router
